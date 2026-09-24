@@ -143,9 +143,9 @@
 | ID   | Task                              | Priority | Status       |
 |------|-----------------------------------|----------|--------------|
 | 10.1 | Prepare production config         | High     | Done         |
-| 10.2 | Deploy to Render                  | High     | Not Started  |
-| 10.3 | Configure production MySQL        | High     | Not Started  |
-| 10.4 | Smoke testing on production       | High     | Not Started  |
+| 10.2 | Deploy to Render                  | High     | Done         |
+| 10.3 | Configure production MySQL        | High     | Done         |
+| 10.4 | Smoke testing on production       | High     | Done         |
 
 ---
 
