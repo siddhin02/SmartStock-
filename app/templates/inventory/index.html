@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col">
+        <h2 class="mb-0">Inventory History</h2>
+        <p class="text-muted mb-0">Recent stock movements</p>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Date</th>
+                        <th>Product</th>
+                        <th>Type</th>
+                        <th>Qty Changed</th>
+                        <th>User</th>
+                        <th>Reference</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for txn in transactions %}
+                    <tr>
+                        <td class="ps-3">{{ txn.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td class="fw-bold">{{ txn.product.name }}</td>
+                        <td>
+                            {% if txn.transaction_type == 'Stock-in' %}
+                                <span class="badge bg-success">Stock-in</span>
+                            {% elif txn.transaction_type == 'Stock-out' %}
+                                <span class="badge bg-warning text-dark">Stock-out</span>
+                            {% elif txn.transaction_type == 'Sale' %}
+                                <span class="badge bg-primary">Sale</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ txn.transaction_type }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="fw-bold {% if txn.quantity_changed > 0 %}text-success{% else %}text-danger{% endif %}">
+                            {{ '+' if txn.quantity_changed > 0 else '' }}{{ txn.quantity_changed }}
+                        </td>
+                        <td>{{ txn.user.username }}</td>
+                        <td>{{ txn.reference_id or '-' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">No inventory transactions found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

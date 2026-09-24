@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <!-- Left Column: Search & Cart -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <h4 class="mb-3">Point of Sale (Billing)</h4>
+                <div class="input-group mb-4 position-relative">
+                    <span class="input-group-text bg-white border-end-0"><i class="fw-bold">🔍</i></span>
+                    <input type="text" id="productSearch" class="form-control form-control-lg border-start-0" placeholder="Search by name, SKU, or barcode..." autocomplete="off">
+                </div>
+                
+                <div id="searchResults" class="list-group position-absolute shadow z-3 w-75" style="display:none; max-height: 250px; overflow-y: auto;"></div>
+                
+                <div class="table-responsive" style="min-height: 350px;">
+                    <table class="table table-hover align-middle" id="cartTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th style="width: 150px;">Quantity</th>
+                                <th>Total</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="cartBody">
+                            <tr id="emptyCartMsg">
+                                <td colspan="5" class="text-center py-5 text-muted">Cart is empty. Search for products to add.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Column: Summary & Checkout -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 bg-light sticky-top">
+            <div class="card-body p-4">
+                <h4 class="mb-4 text-center">Bill Summary</h4>
+                
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted fs-5">Subtotal</span>
+                    <span class="fw-bold fs-5" id="cartSubtotal">₹0.00</span>
+                </div>
+                
+                <hr class="my-4">
+                <div class="d-flex justify-content-between mb-4">
+                    <span class="fw-bold fs-3">Total</span>
+                    <span class="fw-bold fs-2 text-success" id="cartTotal">₹0.00</span>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Payment Method</label>
+                    <select class="form-select form-select-lg" id="paymentMethod">
+                        <option value="Cash">Cash</option>
+                        <option value="UPI">UPI</option>
+                        <option value="Card">Card</option>
+                    </select>
+                </div>
+                
+                <button id="checkoutBtn" class="btn btn-success btn-lg w-100 py-3 fw-bold shadow-sm" disabled>Complete Sale</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const searchInput = document.getElementById('productSearch');
+    const searchResults = document.getElementById('searchResults');
+    const cartBody = document.getElementById('cartBody');
+    const emptyCartMsg = document.getElementById('emptyCartMsg');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    
+    let cart = [];
+    
+    searchInput.addEventListener('input', async (e) => {
+        const query = e.target.value.trim();
+        if (query.length < 1) {
+            searchResults.style.display = 'none';
+            return;
+        }
+        
+        try {
+            const res = await fetch(`/billing/api/search?q=${encodeURIComponent(query)}`);
+            const products = await res.json();
+            
+            searchResults.innerHTML = '';
+            if (products.length > 0) {
+                products.forEach(p => {
+                    const btn = document.createElement('button');
+                    btn.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+                    btn.innerHTML = `
+                        <div><strong class="fs-5">${p.name}</strong> <br> <small class="text-muted">In Stock: ${p.stock} ${p.unit}</small></div>
+                        <span class="badge bg-primary rounded-pill fs-6">₹${p.price.toFixed(2)}</span>
+                    `;
+                    btn.onclick = () => addToCart(p);
+                    searchResults.appendChild(btn);
+                });
+                
+                // Position properly below input
+                const rect = searchInput.getBoundingClientRect();
+                searchResults.style.top = (rect.top + window.scrollY + searchInput.offsetHeight) + 'px';
+                searchResults.style.left = (rect.left + window.scrollX) + 'px';
+                searchResults.style.display = 'block';
+            } else {
+                searchResults.style.display = 'none';
+            }
+        } catch (err) {
+            console.error('Search error', err);
+        }
+    });
+    
+    document.addEventListener('click', (e) => {
+        if (e.target !== searchInput) searchResults.style.display = 'none';
+    });
+    
+    function addToCart(product) {
+        searchInput.value = '';
+        searchResults.style.display = 'none';
+        
+        const existing = cart.find(i => i.id === product.id);
+        if (existing) {
+            if (existing.qty < product.stock) {
+                existing.qty++;
+            } else {
+                alert(`Cannot add more. Only ${product.stock} available in stock.`);
+            }
+        } else {
+            cart.push({...product, qty: 1});
+        }
+        renderCart();
+    }
+    
+    window.updateQty = function(id, newQty) {
+        const item = cart.find(i => i.id === id);
+        if (item) {
+            if (newQty > item.stock) {
+                alert(`Cannot exceed available stock of ${item.stock}!`);
+                newQty = item.stock;
+            }
+            if (newQty < 1) newQty = 1;
+            item.qty = newQty;
+            renderCart();
+        }
+    }
+    
+    window.removeItem = function(id) {
+    if (!confirm('Are you sure you want to remove this item from the cart?')) {
+        return;
+    }
+
+    cart = cart.filter(i => i.id !== id);
+    renderCart();
+}
+    function renderCart() {
+        if (cart.length === 0) {
+            cartBody.innerHTML = '';
+            cartBody.appendChild(emptyCartMsg);
+            document.getElementById('cartSubtotal').innerText = '₹0.00';
+            document.getElementById('cartTotal').innerText = '₹0.00';
+            checkoutBtn.disabled = true;
+            return;
+        }
+        
+        checkoutBtn.disabled = false;
+        cartBody.innerHTML = '';
+        let total = 0;
+        
+        cart.forEach(item => {
+            const lineTotal = item.price * item.qty;
+            total += lineTotal;
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="fw-bold fs-5">${item.name}</td>
+                <td class="fs-5 text-muted">₹${item.price.toFixed(2)}</td>
+                <td>
+                    <input type="number" class="form-control form-control-lg text-center fw-bold" value="${item.qty}" min="1" max="${item.stock}" onchange="updateQty(${item.id}, parseInt(this.value))">
+                </td>
+                <td class="fw-bold fs-5 text-primary">₹${lineTotal.toFixed(2)}</td>
+                <td>
+                    <button class="btn btn-outline-danger fw-bold" onclick="removeItem(${item.id})">X</button>
+                </td>
+            `;
+            cartBody.appendChild(tr);
+        });
+        
+        document.getElementById('cartSubtotal').innerText = `₹${total.toFixed(2)}`;
+        document.getElementById('cartTotal').innerText = `₹${total.toFixed(2)}`;
+    }
+    
+    checkoutBtn.addEventListener('click', async () => {
+        if (cart.length === 0) return;
+        
+        checkoutBtn.disabled = true;
+        checkoutBtn.innerText = 'Processing...';
+        
+        const payload = {
+            items: cart.map(i => ({ id: i.id, name: i.name, quantity: i.qty })),
+            payment_method: document.getElementById('paymentMethod').value
+        };
+        
+        try {
+            const res = await fetch('/billing/api/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                alert(`Sale successful! Invoice: ${data.invoice_number}`);
+                cart = [];
+                renderCart();
+            } else {
+                alert(`Checkout failed: ${data.message}`);
+                checkoutBtn.disabled = false;
+                checkoutBtn.innerText = 'Complete Sale';
+            }
+        } catch (err) {
+            alert('An error occurred during checkout.');
+            checkoutBtn.disabled = false;
+            checkoutBtn.innerText = 'Complete Sale';
+        }
+    });
+</script>
+{% endblock %}

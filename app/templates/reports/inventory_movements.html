@@ -1,0 +1,200 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col">
+        <h2 class="mb-0">Inventory Movement Report</h2>
+        <p class="text-muted mb-0">
+            Stock movement and inventory audit history
+        </p>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('reports.index') }}" class="btn btn-outline-secondary">
+            &larr; Reports
+        </a>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('reports.inventory_movements') }}">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="date_from" class="form-label fw-bold">From Date</label>
+                    <input
+                        type="date"
+                        id="date_from"
+                        name="date_from"
+                        class="form-control"
+                        value="{{ date_from }}"
+                    >
+                </div>
+
+                <div class="col-md-3">
+                    <label for="date_to" class="form-label fw-bold">To Date</label>
+                    <input
+                        type="date"
+                        id="date_to"
+                        name="date_to"
+                        class="form-control"
+                        value="{{ date_to }}"
+                    >
+                </div>
+
+                <div class="col-md-3">
+                    <label for="movement_type" class="form-label fw-bold">
+                        Movement Type
+                    </label>
+                    <select
+                        id="movement_type"
+                        name="movement_type"
+                        class="form-select"
+                    >
+                        <option value="All" {% if movement_type == 'All' %}selected{% endif %}>
+                            All
+                        </option>
+                        {% for type in movement_types %}
+                        <option
+                            value="{{ type }}"
+                            {% if movement_type == type %}selected{% endif %}
+                        >
+                            {{ type }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">
+                        Filter Movements
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Summary -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-primary text-white text-center py-4">
+            <div class="small text-uppercase opacity-75 mb-1">
+                Total Movements
+            </div>
+            <div class="display-6 fw-bold">
+                {{ transactions|length }}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-success text-white text-center py-4">
+            <div class="small text-uppercase opacity-75 mb-1">
+                Stock Added
+            </div>
+            <div class="display-6 fw-bold">
+                {{ transactions
+                    |selectattr('quantity_changed', 'gt', 0)
+                    |map(attribute='quantity_changed')
+                    |sum
+                }}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-danger text-white text-center py-4">
+            <div class="small text-uppercase opacity-75 mb-1">
+                Stock Removed
+            </div>
+            <div class="display-6 fw-bold">
+                {{ transactions
+                    |selectattr('quantity_changed', 'lt', 0)
+                    |map(attribute='quantity_changed')
+                    |map('abs')
+                    |sum
+                }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Movement Table -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold">Inventory Movements</h5>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Date &amp; Time</th>
+                        <th>Product</th>
+                        <th>User</th>
+                        <th>Type</th>
+                        <th class="text-center">Quantity</th>
+                        <th>Reference</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td class="ps-3">
+                            {{ transaction.created_at.strftime('%d %b %Y, %I:%M %p') }}
+                        </td>
+
+                        <td class="fw-bold">
+                            {{ transaction.product.name if transaction.product else 'N/A' }}
+                        </td>
+
+                        <td>
+                            {{ transaction.user.username if transaction.user else 'N/A' }}
+                        </td>
+
+                        <td>
+                            {% if transaction.transaction_type == 'Stock-in' %}
+                                <span class="badge bg-success">Stock-in</span>
+                            {% elif transaction.transaction_type == 'Stock-out' %}
+                                <span class="badge bg-warning text-dark">Stock-out</span>
+                            {% elif transaction.transaction_type == 'Sale' %}
+                                <span class="badge bg-primary">Sale</span>
+                            {% else %}
+                                <span class="badge bg-secondary">
+                                    {{ transaction.transaction_type }}
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-center fw-bold">
+                            {% if transaction.quantity_changed > 0 %}
+                                <span class="text-success">
+                                    +{{ transaction.quantity_changed }}
+                                </span>
+                            {% else %}
+                                <span class="text-danger">
+                                    {{ transaction.quantity_changed }}
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td class="font-monospace small">
+                            {{ transaction.reference_id or '—' }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            No inventory movements found for the selected filters.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

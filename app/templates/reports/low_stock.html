@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col">
+        <h2 class="mb-0">Low Stock Report</h2>
+        <p class="text-muted mb-0">Products at or below their minimum stock level</p>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('reports.index') }}" class="btn btn-outline-secondary">&larr; Reports</a>
+    </div>
+</div>
+
+{% if products %}
+<div class="alert alert-warning shadow-sm border-0">
+    <strong>⚠️ {{ products|length }} product(s)</strong> require restocking.
+</div>
+{% else %}
+<div class="alert alert-success shadow-sm border-0">
+    <strong>✅ All products</strong> are above their minimum stock level. No restocking required.
+</div>
+{% endif %}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">Product</th>
+                    <th>Category</th>
+                    <th>Current Stock</th>
+                    <th>Min. Level</th>
+                    <th>Status</th>
+                    <th class="text-end pe-3">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in products %}
+                <tr>
+                    <td class="ps-3 fw-bold">{{ p.name }}</td>
+                    <td>{{ p.category.name if p.category else 'N/A' }}</td>
+                    <td>
+                        <span class="fw-bold {{ 'text-danger' if p.stock_quantity == 0 else 'text-warning' }}">
+                            {{ p.stock_quantity }} {{ p.unit }}
+                        </span>
+                    </td>
+                    <td class="text-muted">{{ p.min_stock_level }} {{ p.unit }}</td>
+                    <td>
+                        {% if p.stock_quantity == 0 %}
+                            <span class="badge bg-danger">Out of Stock</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">Low Stock</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end pe-3">
+                        <a href="{{ url_for('inventory.adjust', product_id=p.id) }}" class="btn btn-sm btn-outline-primary">Restock</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">No low-stock products found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

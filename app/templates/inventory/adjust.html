@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white py-3 d-flex align-items-center">
+                <a href="{{ url_for('product.index') }}" class="btn btn-sm btn-outline-secondary me-3">&larr; Back</a>
+                <h4 class="mb-0">Adjust Stock: {{ product.name }}</h4>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-info d-flex justify-content-between align-items-center">
+                    <span class="fw-bold">Current Stock:</span>
+                    <span class="fs-5">{{ product.stock_quantity }} {{ product.unit }}</span>
+                </div>
+                <form method="POST" action="{{ url_for('inventory.adjust', product_id=product.id) }}">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Adjustment Type *</label>
+                        <select class="form-select" name="type" required>
+                            <option value="Stock-in">Stock-in (Add to inventory)</option>
+                            <option value="Stock-out">Stock-out (Remove from inventory)</option>
+                            <option value="Adjustment (Add)">Adjustment (Found missing stock)</option>
+                            <option value="Adjustment (Remove)">Adjustment (Damaged/Expired)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Quantity *</label>
+                        <input type="number" min="1" class="form-control" name="quantity" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Reference / Reason</label>
+                        <input type="text" class="form-control" name="reference" placeholder="e.g. Supplier invoice #, Damaged goods">
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">Update Stock</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

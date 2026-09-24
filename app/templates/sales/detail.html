@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- Invoice Card -->
+        <div class="card shadow border-0 mb-4" id="invoicePrint">
+            <!-- Invoice Header -->
+            <div class="card-header bg-dark text-white py-4 text-center">
+                <h3 class="mb-1 fw-bold">SmartStock POS</h3>
+                <p class="mb-0 text-muted-white small">Tax Invoice</p>
+            </div>
+            <div class="card-body p-4">
+                <!-- Invoice Meta -->
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <p class="mb-1"><span class="text-muted">Invoice #:</span> <strong class="text-primary font-monospace">{{ sale.invoice_number }}</strong></p>
+                        <p class="mb-1"><span class="text-muted">Date:</span> <strong>{{ sale.created_at.strftime('%d %b %Y, %I:%M %p') }}</strong></p>
+                        <p class="mb-0"><span class="text-muted">Cashier:</span> <strong>{{ sale.cashier.username }}</strong></p>
+                    </div>
+                    <div class="col-6 text-end">
+                        <p class="mb-1"><span class="text-muted">Payment:</span>
+                            <span class="badge bg-success fs-6">{{ sale.payment_method }}</span>
+                        </p>
+                        <p class="mb-0"><span class="text-muted">Status:</span>
+                            <span class="badge bg-{{ 'success' if sale.status == 'Completed' else 'danger' }} fs-6">{{ sale.status }}</span>
+                        </p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Items Table -->
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Product</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-end">Unit Price</th>
+                            <th class="text-end">Line Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td class="fw-bold">{{ item.product.name }}</td>
+                            <td class="text-center">{{ item.quantity }} {{ item.product.unit }}</td>
+                            <td class="text-end">₹{{ "%.2f"|format(item.unit_price) }}</td>
+                            <td class="text-end fw-bold text-primary">₹{{ "%.2f"|format(item.line_total) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="4" class="text-end fw-bold">Subtotal</td>
+                            <td class="text-end fw-bold">₹{{ "%.2f"|format(sale.subtotal) }}</td>
+                        </tr>
+                        {% if sale.total_discount > 0 %}
+                        <tr>
+                            <td colspan="4" class="text-end text-danger">Discount</td>
+                            <td class="text-end text-danger">-₹{{ "%.2f"|format(sale.total_discount) }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if sale.total_tax > 0 %}
+                        <tr>
+                            <td colspan="4" class="text-end text-muted">Tax</td>
+                            <td class="text-end text-muted">+₹{{ "%.2f"|format(sale.total_tax) }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr class="table-success">
+                            <td colspan="4" class="text-end fw-bold fs-5">Grand Total</td>
+                            <td class="text-end fw-bold fs-4 text-success">₹{{ "%.2f"|format(sale.grand_total) }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <p class="text-center text-muted mt-3 mb-0">Thank you for your purchase! 🙏</p>
+            </div>
+        </div>
+
+        <!-- Action Buttons (hidden when printing) -->
+        <div class="d-flex gap-3 mb-4 no-print">
+            <a href="{{ url_for('sales.index') }}" class="btn btn-outline-secondary">&larr; Back to Sales</a>
+            <button onclick="window.print()" class="btn btn-primary ms-auto">🖨️ Print Invoice</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .no-print, nav, .alert { display: none !important; }
+        body { background: white !important; }
+        .card { border: none !important; box-shadow: none !important; }
+    }
+</style>
+{% endblock %}

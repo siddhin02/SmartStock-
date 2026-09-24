@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col">
+        <h2 class="mb-0">Inventory Valuation</h2>
+        <p class="text-muted mb-0">Current stock levels and total inventory value at purchase price</p>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('reports.index') }}" class="btn btn-outline-secondary">&larr; Reports</a>
+    </div>
+</div>
+
+<!-- Summary -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-primary text-white text-center py-4">
+            <div class="small text-uppercase opacity-75 mb-1">Active Products</div>
+            <div class="display-6 fw-bold">{{ products|length }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-success text-white text-center py-4">
+            <div class="small text-uppercase opacity-75 mb-1">Total Stock Units</div>
+            <div class="display-6 fw-bold">{{ products|sum(attribute='stock_quantity') }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-dark text-white text-center py-4">
+            <div class="small text-uppercase opacity-75 mb-1">Inventory Value</div>
+            <div class="display-6 fw-bold">₹{{ "%.2f"|format(total_value) }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Product Table -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Product</th>
+                        <th>Category</th>
+                        <th>Unit</th>
+                        <th class="text-center">Stock</th>
+                        <th class="text-end">Purchase Price</th>
+                        <th class="text-end">Sell Price</th>
+                        <th class="text-end pe-3">Stock Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in products %}
+                    <tr>
+                        <td class="ps-3 fw-bold">{{ p.name }}</td>
+                        <td>{{ p.category.name if p.category else 'N/A' }}</td>
+                        <td>{{ p.unit }}</td>
+                        <td class="text-center">
+                            {% if p.stock_quantity == 0 %}
+                                <span class="badge bg-danger">0</span>
+                            {% elif p.stock_quantity <= p.min_stock_level %}
+                                <span class="badge bg-warning text-dark">{{ p.stock_quantity }}</span>
+                            {% else %}
+                                <span class="badge bg-success">{{ p.stock_quantity }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end text-muted">₹{{ "%.2f"|format(p.purchase_price) }}</td>
+                        <td class="text-end fw-bold text-success">₹{{ "%.2f"|format(p.selling_price) }}</td>
+                        <td class="text-end pe-3 fw-bold text-primary">
+                            ₹{{ "%.2f"|format(p.purchase_price * p.stock_quantity) }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">No products found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="table-light">
+                    <tr>
+                        <td colspan="6" class="text-end fw-bold pe-2">Total Inventory Value</td>
+                        <td class="text-end pe-3 fw-bold text-primary fs-5">₹{{ "%.2f"|format(total_value) }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

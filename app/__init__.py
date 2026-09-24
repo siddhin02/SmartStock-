@@ -14,8 +14,36 @@ def create_app(config_class=Config):
     login_manager.login_view = 'auth.login'
     login_manager.login_message_category = 'info'
 
-    # We will register blueprints here in the future
-    # from app.routes.auth import bp as auth_bp
-    # app.register_blueprint(auth_bp, url_prefix='/auth')
+    from app.routes.auth import bp as auth_bp
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+    
+    from app.routes.dashboard import bp as dashboard_bp
+    app.register_blueprint(dashboard_bp)
+    
+    from app.routes.category import bp as category_bp
+    app.register_blueprint(category_bp)
+
+    from app.routes.product import bp as product_bp
+    app.register_blueprint(product_bp)
+
+    from app.routes.inventory import bp as inventory_bp
+    app.register_blueprint(inventory_bp)
+
+    from app.routes.billing import bp as billing_bp
+    app.register_blueprint(billing_bp)
+
+    from app.routes.sales import bp as sales_bp
+    app.register_blueprint(sales_bp)
+
+    from app.routes.customer import bp as customer_bp
+    app.register_blueprint(customer_bp)
+
+    from app.routes.reports import bp as reports_bp
+    app.register_blueprint(reports_bp)
+
+    @app.context_processor
+    def inject_now():
+        from datetime import datetime
+        return {'now': datetime.now()}
 
     return app
