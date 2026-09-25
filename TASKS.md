@@ -178,3 +178,15 @@
 
 
 
+
+---
+
+## PHASE 13   AUTHENTICATION & USER MANAGEMENT ENHANCEMENT
+
+| ID    | Task                              | Priority | Status       |
+|-------|-----------------------------------|----------|--------------|
+| 13.1  | User self-registration            | High     | Not Started  |
+| 13.2  | Registered-user login enforcement | High     | Not Started  |
+| 13.3  | Admin Staff user management       | High     | Not Started  |
+| 13.4  | Role-based access verification    | High     | Not Started  |
+| 13.5  | Authentication regression testing | High     | Not Started  |
