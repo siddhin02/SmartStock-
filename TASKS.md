@@ -153,11 +153,11 @@
 
 | ID   | Task                              | Priority | Status       |
 |------|-----------------------------------|----------|--------------|
-| 11.1 | Write README.md                   | High     | Not Started  |
-| 11.2 | Create ER Diagram                 | Medium   | Not Started  |
-| 11.3 | Create Use Case Diagram           | Medium   | Not Started  |
-| 11.4 | Write User Manual                 | Medium   | Not Started  |
-| 11.5 | Create Final Project Report       | Medium   | Not Started  |
+| 11.1 | Write README.md                   | High     | Done         |
+| 11.2 | Create ER Diagram                 | Medium   | Done         |
+| 11.3 | Create Use Case Diagram           | Medium   | Done         |
+| 11.4 | Write User Manual                 | Medium   | Done         |
+| 11.5 | Create Final Project Report      | Medium   | Done         |
 
 ---
 
@@ -165,9 +165,9 @@
 
 | ID   | Task                              | Priority | Status       |
 |------|-----------------------------------|----------|--------------|
-| 12.1 | Create presentation slides (PPT)  | High     | Not Started  |
-| 12.2 | Prepare demo flow                 | High     | Not Started  |
-| 12.3 | Prepare viva Q&A                  | Medium   | Not Started  |
+| 12.1 | Create presentation slides (PPT)  | High     | Done         |
+| 12.2 | Prepare demo flow                 | High     | Done         |
+| 12.3 | Prepare viva Q&A                  | Medium   | Done         |
 
 
 
@@ -185,8 +185,8 @@
 
 | ID    | Task                              | Priority | Status       |
 |-------|-----------------------------------|----------|--------------|
-| 13.1  | User self-registration            | High     | Not Started  |
-| 13.2  | Registered-user login enforcement | High     | Not Started  |
-| 13.3  | Admin Staff user management       | High     | Not Started  |
-| 13.4  | Role-based access verification    | High     | Not Started  |
-| 13.5  | Authentication regression testing | High     | Not Started  |
+| 13.1  | User self-registration            | High     | Done         |
+| 13.2  | Registered-user login enforcement | High     | Done         |
+| 13.3  | Admin Staff user management       | High     | Done  |
+| 13.4  | Role-based access verification    | High     | Done  |
+| 13.5  | Authentication regression testing | High     | Done  |

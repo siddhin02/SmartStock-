@@ -30,6 +30,46 @@ def login():
 
     return render_template('auth/login.html')
 
+@bp.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard.index'))
+
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+
+        if not username:
+            flash('Username is required.', 'danger')
+            return redirect(url_for('auth.register'))
+
+        if not password:
+            flash('Password is required.', 'danger')
+            return redirect(url_for('auth.register'))
+
+        if password != confirm_password:
+            flash('Passwords do not match.', 'danger')
+            return redirect(url_for('auth.register'))
+
+        if User.query.filter_by(username=username).first():
+            flash('Username already exists.', 'danger')
+            return redirect(url_for('auth.register'))
+
+        user = User(
+            username=username,
+            role='Staff',
+            is_active=True
+        )
+        user.set_password(password)
+
+        db.session.add(user)
+        db.session.commit()
+
+        flash('Registration successful. Please log in.', 'success')
+        return redirect(url_for('auth.login'))
+
+    return render_template('auth/register.html')
 @bp.route('/logout')
 @login_required
 def logout():

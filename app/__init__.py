@@ -41,6 +41,9 @@ def create_app(config_class=Config):
     from app.routes.reports import bp as reports_bp
     app.register_blueprint(reports_bp)
 
+    from app.routes.user import bp as user_bp
+    app.register_blueprint(user_bp)
+
     @app.context_processor
     def inject_now():
         from datetime import datetime
